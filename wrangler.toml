@@ -1,0 +1,38 @@
+name = "feedback-aggregator"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# Workers AI binding for sentiment analysis
+[ai]
+binding = "AI"
+
+# D1 Database binding - primary data store
+[[d1_databases]]
+binding = "DB"
+database_name = "feedback-db"
+database_id = "YOUR_DATABASE_ID" # Replace with actual ID after running: wrangler d1 create feedback-db
+
+# KV namespace for caching dashboard data and digests
+[[kv_namespaces]]
+binding = "CACHE"
+id = "YOUR_KV_ID" # Replace with actual ID after running: wrangler kv:namespace create CACHE
+
+# Queue configuration for async feedback analysis
+[[queues.producers]]
+queue = "feedback-analysis-queue"
+binding = "FEEDBACK_QUEUE"
+
+[[queues.consumers]]
+queue = "feedback-analysis-queue"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "feedback-analysis-dlq"
+
+# Cron trigger for daily digest generation (9 AM UTC)
+[triggers]
+crons = ["0 9 * * *"]
+
+# Observability
+[observability]
+enabled = true
